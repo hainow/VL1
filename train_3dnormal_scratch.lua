@@ -19,13 +19,13 @@ local sanitize = require('sanitize')
 -- TODO: put your path for saving models in "save" 
 opt = lapp [[
   -s,--save          (default "./SAVEDMODEL_S")      subdirectory to save logs
-  --saveFreq         (default 5)          save every saveFreq epochs
+  --saveFreq         (default 1)          save every saveFreq epochs
   -n,--network       (default "")          reload pretrained network
   -r,--learningRate  (default 0.01)      learning rate
-  -b,--batchSize     (default 5)         batch size
+  -b,--batchSize     (default 10)         batch size
   -m,--momentum      (default 0.9)         momentum term of adam
   -t,--threads       (default 2)           number of threads
-  -g,--gpu           (default 0)          gpu to run on (default cpu)
+  -g,--gpu           (default 3)          gpu to run on (default cpu)
   --scale            (default 512)          scale of images to train on
   --epochSize        (default 2000)        number of samples per epoch
   --forceDonkeys     (default 0)
@@ -40,7 +40,7 @@ print(opt)
 
 opt.loadSize = opt.scale
 -- TODO: setup the output size 
-opt.labelSize = 40 
+opt.labelSize = 32 
 
 
 opt.manualSeed = torch.random(1, 10000)

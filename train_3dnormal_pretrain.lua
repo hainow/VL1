@@ -41,8 +41,8 @@ print(opt)
 opt.loadSize = opt.scale
 -- TODO: setup the output size 
 -- opt.labelSize = ?
-opt.labelSize = 40
-
+opt.labelSize = 16
+ 
 opt.manualSeed = torch.random(1, 10000)
 print("Seed: " .. opt.manualSeed)
 torch.manualSeed(opt.manualSeed)
@@ -113,11 +113,11 @@ if opt.network == '' then
     ]]--
 
     model_FCN = torch.load("/usr0/home/htpham/Downloads/824/a1/AlexNet")
-    model_FCN:remove()
-    model_FCN:remove()
-    model_FCN:remove()
     model_FCN:remove(19)
     model_FCN:remove(16)
+    model_FCN:remove()
+    model_FCN:remove()
+    model_FCN:remove()
     model_FCN:add(nn.SpatialConvolution(4096, opt.classnum, 1,1,1,1))
     model_FCN:add(nn.Transpose({2,3},{3,4}))
     model_FCN:add(nn.View(-1, opt.classnum))
@@ -133,7 +133,6 @@ else
     tmp = torch.load(opt.network)
     model_FCN = tmp.FCN
 end
-
 
 
 -- TODO: loss function
@@ -166,7 +165,7 @@ print('done with data.lua')
 
 -- TODO: setup training functions, use fcn_train_cls.lua
 print('calling fcn_train_cls.lua')
-fcn = paths.dofile('fcn_train_cls.lua')
+fcn = require('fcn_train_cls.lua')
 print('done with fcn_train_cls.lua')
 
 local optimState = {

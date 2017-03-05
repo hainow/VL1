@@ -20,7 +20,7 @@ opt = lapp[[
 ]]
 
 if opt.gpu < 0 or opt.gpu > 8 then opt.gpu = false end
-opt.network = './SAVEDMODEL_P/fcn_5.net' -- your trained network
+opt.network = './SAVEDMODEL_P/fcn_3.net' -- your trained network
 opt.list_file = '../data/list/testLabels.txt'
 opt.path_dataset = '../data/croptest/'
 opt.codebooktxt = '../data/list/codebook_40.txt' 
@@ -48,7 +48,7 @@ model_FCN = model.FCN:cuda()
 -- remove 3 layers, add Softmax
 model_FCN:remove()
 model_FCN:remove()
---model_FCN:remove()
+model_FCN:remove()
 model_FCN:add(nn.SoftMax())
 
 
