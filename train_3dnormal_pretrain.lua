@@ -18,7 +18,7 @@ local sanitize = require('sanitize')
 -- parse command-line options
 -- TODO: put your path for saving models in "save" 
 opt = lapp [[
-  -s,--save          (default "./SAVEDMODEL")      subdirectory to save logs
+  -s,--save          (default "./SAVEDMODEL_P")      subdirectory to save logs
   --saveFreq         (default 1)          save every saveFreq epochs
   -n,--network       (default "")          reload pretrained network
   -r,--learningRate  (default 0.001)      learning rate
@@ -187,6 +187,7 @@ local function train()
     for i = 1, opt.epochSize do
         donkeys:addjob(function()
             return makeData_cls_pre(trainLoader:sample(opt.batchSize))
+            --return makeData_cls(trainLoader:sample(opt.batchSize))
         end,
             fcn.train)
     end

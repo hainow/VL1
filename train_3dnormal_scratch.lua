@@ -18,11 +18,11 @@ local sanitize = require('sanitize')
 -- parse command-line options
 -- TODO: put your path for saving models in "save" 
 opt = lapp [[
-  -s,--save          (default "./")      subdirectory to save logs
+  -s,--save          (default "./SAVEDMODEL_S")      subdirectory to save logs
   --saveFreq         (default 5)          save every saveFreq epochs
   -n,--network       (default "")          reload pretrained network
   -r,--learningRate  (default 0.01)      learning rate
-  -b,--batchSize     (default 10)         batch size
+  -b,--batchSize     (default 5)         batch size
   -m,--momentum      (default 0.9)         momentum term of adam
   -t,--threads       (default 2)           number of threads
   -g,--gpu           (default 0)          gpu to run on (default cpu)
@@ -40,7 +40,7 @@ print(opt)
 
 opt.loadSize = opt.scale
 -- TODO: setup the output size 
--- opt.labelSize = ?
+opt.labelSize = 40 
 
 
 opt.manualSeed = torch.random(1, 10000)
@@ -80,10 +80,47 @@ if opt.network == '' then
     -- TODO: write your own networks, let's name it as model_FCN for the sake of simplicity
     -- hint: you might need to add large padding in conv1 (perhaps around 100ish? )
     -- hint2: use ReArrange instead of Reshape or View
+    model_FCN = nn.Sequential()
 
+    model_FCN:add(nn.SpatialConvolution(3, 96, 11, 11, 4, 4, 68, 68))
+    --model_FCN:add(nn.SpatialConvolution(3, 96, 11, 11, 4, 68))
+    model_FCN:add(nn.SpatialBatchNormalization(96))
+    model_FCN:add(nn.ReLU())
+    model_FCN:add(nn.SpatialMaxPooling(3,3,2,2))   
+
+    model_FCN:add(nn.SpatialConvolution(96, 256, 5, 5, 1, 1, 2, 2))
+    model_FCN:add(nn.SpatialBatchNormalization(256))
+    model_FCN:add(nn.ReLU())
+    model_FCN:add(nn.SpatialMaxPooling(3,3,2,2))   
+
+    model_FCN:add(nn.SpatialConvolution(256, 384, 3, 3, 1, 1, 1, 1))
+    model_FCN:add(nn.SpatialBatchNormalization(384))
+    model_FCN:add(nn.ReLU())
+
+    model_FCN:add(nn.SpatialConvolution(384, 384, 3, 3, 1, 1, 1, 1))
+    model_FCN:add(nn.SpatialBatchNormalization(384))
+    model_FCN:add(nn.ReLU())
    
+    model_FCN:add(nn.SpatialConvolution(384, 256, 3, 3, 1, 1, 1, 1))
+    model_FCN:add(nn.SpatialBatchNormalization(256))
+    model_FCN:add(nn.ReLU())
+    model_FCN:add(nn.SpatialMaxPooling(3,3,2,2))   
+	
+    model_FCN:add(nn.SpatialConvolution(256, 1024, 6, 6, 1, 1, 1, 1))
+    model_FCN:add(nn.SpatialBatchNormalization(1024))
+    model_FCN:add(nn.ReLU())
 
+    model_FCN:add(nn.SpatialFullConvolution(1024, 512, 4, 4, 2, 2, 1, 1))
+    model_FCN:add(nn.SpatialBatchNormalization(512))
+    model_FCN:add(nn.ReLU())
 
+    model_FCN:add(nn.SpatialConvolution(512, 40, 3, 3, 1, 1, 1, 1))
+    model_FCN:add(nn.Transpose({2,3},{3,4}))
+    model_FCN:add(nn.View(-1, 40))
+
+    model_FCN:add(nn.LogSoftMax())
+
+    -- pre-existing code 
     model_FCN:apply(weights_init)
 
 else
@@ -98,10 +135,28 @@ print(model_FCN)
 
 
 -- TODO: loss function
--- TODO: retrieve parameters and gradients
--- TODO: setup dataset, use data.lua
--- TODO: setup training functions, use fcn_train_cls.lua
+criterion = nn.ClassNLLCriterion()
+print('done with loss function')
+
 -- TODO: convert model and loss function to cuda
+print("Migrating model to GPU...")
+model_FCN:cuda()
+criterion:cuda()
+
+-- TODO: retrieve parameters and gradients
+print('getting params')
+params_FCN, gradParams_FCN = model_FCN:getParameters()
+print('done with getting params')
+
+-- TODO: setup dataset, use data.lua
+print('calling data.lua')
+paths.dofile('data.lua')
+print('done with data.lua')
+
+-- TODO: setup training functions, use fcn_train_cls.lua
+print('calling fcn_train_cls.lua')
+fcn = paths.dofile('fcn_train_cls.lua')
+print('done with fcn_train_cls.lua')
 
 
 local optimState = {
