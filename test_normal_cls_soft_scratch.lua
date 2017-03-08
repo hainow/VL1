@@ -20,7 +20,7 @@ opt = lapp[[
 ]]
 
 if opt.gpu < 0 or opt.gpu > 8 then opt.gpu = false end
-opt.network = './SAVEDMODEL_S/fcn_5.net' -- your trained network
+opt.network = './SAVEDMODEL_S/fcn_40.net' -- your trained network
 opt.list_file = '../data/list/testLabels.txt'
 opt.path_dataset = '../data/croptest/'
 opt.codebooktxt = '../data/list/codebook_40.txt' 
@@ -121,9 +121,6 @@ function getSamples( N, beg)
 
   print('Image dimension before conversion')
   print(imgs:size())
-  -- TODO: if you are using pre-trained models, remember to convert RGB to BGR
-  --imgs = imgs:index(2, torch.LongTensor{3, 2, 1})
- 
   -- TODO: forward prop given imgs as inputs, output should be samples
   -- dimension of samples is batchsize * classnum(40) * height * width
   --print('Image dimension after conversion')

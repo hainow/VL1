@@ -36,20 +36,12 @@ function fcn.train(inputs_all)
         -- end
         gradParams_FCN:zero()
 
-        -- copy inputs_all[1] and [2] to inputs & target
-        --inputs:copy(inputs_all[1])
-        --targets:copy(inputs_all[2])
-	--inputs = inputs_all[1]
-	--targets = inputs_all[2]
-	--inputs:cuda()
-        --targets:cuda()
-        
         -- calculate ouputs
         outputs = model_FCN:forward(inputs)
 
         -- does forward_path is err
         err = criterion:forward(outputs, targets)
-        print(string.format('FCN loss: %f', err))
+        --print(string.format('FCN loss: %f', err))
         -- calculate backward df
         local df_samples = criterion:backward(outputs, targets)
 

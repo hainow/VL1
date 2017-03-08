@@ -20,7 +20,7 @@ require 'image'
 
 local dataset = torch.class('dataLoader')
 
-list_file = '/usr0/home/htpham/Downloads/824/a1/data/list/trainlist_rand.txt'
+list_file = '/usr0/home/htpham/Downloads/824/a1/data/list/trainlist_rand.txt' -- format: normals_high and imgs in a line
 path_dataset = '/usr0/home/htpham/Downloads/824/a1/data/'
 
 print ('finish defining list file and path to dataset ' )  

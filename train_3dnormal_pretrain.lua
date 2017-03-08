@@ -22,7 +22,7 @@ opt = lapp [[
   --saveFreq         (default 1)          save every saveFreq epochs
   -n,--network       (default "")          reload pretrained network
   -r,--learningRate  (default 0.001)      learning rate
-  -b,--batchSize     (default 2)         batch size
+  -b,--batchSize     (default 10)         batch size
   -m,--momentum      (default 0.9)         momentum term of adam
   -t,--threads       (default 2)           number of threads
   -g,--gpu           (default 1)          gpu to run on (default cpu)

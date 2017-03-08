@@ -75,51 +75,42 @@ local function loadLabel_high(path)
 end
 
 
--- transpose codebook
--- codebook = codebook:transpose(1,2) 
+--*** WARNING: matrix implementation is **NOT** FASTER than loop implementation 
+-- LUA really needs a library as numpy for python 
+
+
+-- transpose codebook for matrix multiplication 
+--codebook = codebook:transpose(1,2) 
 function makeData_cls2(img, label)
     -- #label = opt.batchSize * 3 * opt.labelSize * opt.labelSize = N, 3, a a
     
     -- transpose (2, 3) and (3, 4) => N, a, a, 3
     --label = label:transpose(2, 3); label = label:transpose(3, 4);
+    --label = label:reshape(opt.batchSize * opt.labelSize * opt.labelSize, 3) 
+    
     label = nn.Transpose({2,3}, {3,4}):forward(label) 
-    new_label = label[{{}, {}, {}, {1}}]
+    label = nn.View(opt.batchSize * opt.labelSize * opt.labelSize, 3):forward(label)
 
-    -- dot product 
-    --local dot_prod = label * codebook -- cannot do for 4D x 2D 
-    --workaround solution to matrix multiplication 
-    for i = 1, opt.batchSize do
-        for j = 1, opt.labelSize do
-            dot_prod = label[i][j] * codebook  -- a x 40 
-            _, idx   = torch.max(dot_prod, 2) -- idx of a x 1 
-            new_label[i][j] = idx
-        end 
-    end 
-    --flatten     
-    label = new_label:reshape(opt.batchSize * opt.labelSize * opt.labelSize)
-    new_label = nil 
+    -- dot product: change 4D tendor to 2D tensor to do dot product 
+    local dot_prod = label * codebook 
+    _, label = torch.max(dot_prod, 2) --label = argmax (index)
+    
+    dot_prod = nil 
     return {img, label}
 end
 
+function makeData_cls_pre(img, label)
+    -- TODO: almost same as makeData_cls, need to convert img from RGB to BGR for caffe pre-trained model
+    img = img:index(2, torch.LongTensor{3, 2, 1})
+    return makeData_cls(img, label)
+end
 
 
-
+-- this version is as fast as matrix implementation above !!! 
 function makeData_cls(img, label)
     -- TODO: the input label is a 3-channel real value image, quantize each pixel into classes (1 ~ 40)
     -- resize the label map from a matrix into a long vector
     -- hint: the label should be a vector with dimension of: opt.batchSize * opt.labelSize * opt.labelSize
-
-
---    for i = 1, opt.batchSize do
---        for j = 1, opt.labelSize do
---            for k = 1, opt.labelSize do
---                new_label[(i-1)*opt.labelSize*opt.labelSize + (j-1)*opt.labelSize + (k)] = getQuantizedLabel([{{i}, {j}, {k}}])
---            end
---        end
---    end
---    label = new_label:clone()
-
-    -- overwrite label
     new_label = torch.Tensor(opt.batchSize * opt.labelSize * opt.labelSize)
 
     local count = 1
@@ -136,29 +127,8 @@ function makeData_cls(img, label)
         end
     end
 
-    --label = new_label:clone()
     return {img, new_label}
 end
-
-
-function makeData_cls_pre(img, label)
-    -- TODO: almost same as makeData_cls, need to convert img from RGB to BGR for caffe pre-trained model
-    --print('in make_data_cls_pretrain')
-    
-    img = img:index(2, torch.LongTensor{3, 2, 1})
-
-    --local r = img[{{}, {1}, {}, {}}]
-    --local g = img[{{}, {2}, {}, {}}]
-    --local b = img[{{}, {3}, {}, {}}]
-    --b = torch.cat(b, g, 2)
-    --img = torch.cat(b, r, 2)  
-    return makeData_cls(img, label)
-end
-
-
-
-
-
 --------------------------------------------------------------------------------
 -- Hooks that are used for each image that is loaded
 
